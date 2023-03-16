@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id       Int     @id @default(autoincrement())
+  authorId Int     @map("author_id")
+  title    String  @db.VarChar(255)
+  body     String?
+
+  author User @relation(fields: [authorId], references: [id])
+
+  comments  Comment[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("posts")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  name        String
+  password    String
+  gender      Gender
+  birthDate   DateTime? @map("birth_of_date")
+  phoneNumber String?   @unique @map("phone_number")
+  Role        UserRole  @default(USER)
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+  posts       Post[]
+  comments    Comment[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Comment {
+  id      Int     @id @default(autoincrement())
+  postId  Int
+  userId  Int
+  content String?
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("comments")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+
+  @@map("gender")
+}
